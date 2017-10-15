@@ -19,7 +19,7 @@ bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
-userCommands = ["test", "hug", "pat", "roll", "remind", "kill", "calc", "addquote", "quote", "joke"]
+userCommands = ["test", "hug", "pat", "roll", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "version"]
 operatorCommands = ["say", "purge", "getBot"]
 
 #Remove default help command
@@ -127,6 +127,10 @@ async def help(ctx):
         em.set_author(name='High-Command Commands:', icon_url=bot.user.avatar_url)
         await bot.send_message(ctx.message.author, embed=em)
 
+@bot.command()
+async def version():
+    await bot.say("I am currently on version " + VERSION)
+        
 @bot.command()
 async def test():
     await bot.say("Hello World!")
@@ -250,6 +254,15 @@ async def joke(ctx):
 @bot.command(pass_context = True)
 async def dirtyjoke(ctx):
     await bot.say(ctx.message.author.mention + ": " + pyjokes.get_joke('en', 'adult'))
+    
+@bot.command(pass_context = True)
+async def pfp(ctx, member: discord.Member=None):
+    if member==None:
+        await bot.say("You forgot to give me a user! try mentioning someone with @ next time!")
+        await bot.say("Example: `!pfp @Katyusha`")
+        return
+    else:
+        await bot.say(ctx.message.author.mention + ": Here you go!\n" + member.avatar_url)
     
 #Cleverbot integration
 @bot.event
