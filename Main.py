@@ -160,6 +160,7 @@ async def roll(dice : str=None):
 @bot.command(pass_context = True)
 async def flip(ctx):
     await bot.say("Okay, I'll flip it!")
+    await bot.send_typing(ctx.message.channel)
     await asyncio.sleep(3)
     if random.choice([True, False]) == True:
         await bot.say(ctx.message.author.mention + ": the result is.......HEADS!")
