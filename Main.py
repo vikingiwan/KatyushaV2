@@ -263,6 +263,16 @@ async def pfp(ctx, member: discord.Member=None):
         return
     else:
         await bot.say(ctx.message.author.mention + ": Here you go!\n" + member.avatar_url)
+        
+@bot.command(pass_context = True)
+async def info(ctx, member: discord.Member=None):
+    if member == None:
+        member = ctx.message.author
+    info = "Joined server on: " + member.joined_at.strftime("%A %B %d, %Y at %I:%M%p") + "\n"
+    info = info + "Account created on: " + member.created_at.strftime("%A %B %d, %Y at %I:%M%p")
+    em = discord.Embed(title='', description=info, colour=0xFF0000)
+    em.set_author(name=member.name, icon_url=member.avatar_url)
+    await bot.send_message(ctx.message.channel, embed=em)
     
 #Cleverbot integration
 @bot.event
