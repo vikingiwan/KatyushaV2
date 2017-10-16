@@ -163,9 +163,9 @@ async def flip(ctx):
     await bot.send_typing(ctx.message.channel)
     await asyncio.sleep(3)
     if random.choice([True, False]) == True:
-        await bot.say(ctx.message.author.mention + ": the result is.......HEADS!")
+        await bot.say(ctx.message.author.mention + ": the result is.......**HEADS**!")
     else:
-        await bot.say(ctx.message.author.mention + ": the result is.......TAILS!")
+        await bot.say(ctx.message.author.mention + ": the result is.......**TAILS**!")
       
 @bot.group(pass_context = True)
 async def remind(ctx, time: str = "0", *, reminder: str="null"):
