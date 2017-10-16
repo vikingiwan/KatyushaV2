@@ -258,11 +258,11 @@ async def dirtyjoke(ctx):
 @bot.command(pass_context = True)
 async def pfp(ctx, member: discord.Member=None):
     if member==None:
-        await bot.say("You forgot to give me a user! try mentioning someone with @ next time!")
-        await bot.say("Example: `!pfp @Katyusha`")
-        return
-    else:
-        await bot.say(ctx.message.author.mention + ": Here you go!\n" + member.avatar_url)
+        member = ctx.message.author
+#        await bot.say("You forgot to give me a user! try mentioning someone with @ next time!")
+#        await bot.say("Example: `!pfp @Katyusha`")
+#        return
+    await bot.say(ctx.message.author.mention + ": Here you go!\n" + member.avatar_url)
         
 @bot.command(pass_context = True)
 async def info(ctx, member: discord.Member=None):
