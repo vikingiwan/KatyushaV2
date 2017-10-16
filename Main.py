@@ -156,8 +156,7 @@ async def roll(dice : str=None):
 
     result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
     await bot.say(result)
-    
-    
+      
 @bot.command(pass_context = True)
 async def flip(ctx):
     await bot.say("Okay, I'll flip it!")
@@ -166,8 +165,7 @@ async def flip(ctx):
         await bot.say(ctx.message.author.mention + ": the result is.......HEADS!")
     else:
         await bot.say(ctx.message.author.mention + ": the result is.......TAILS!")
-    
-        
+      
 @bot.group(pass_context = True)
 async def remind(ctx, time: str = "0", *, reminder: str="null"):
     time = int(time)
