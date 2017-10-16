@@ -156,6 +156,25 @@ async def roll(dice : str=None):
 
     result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
     await bot.say(result)
+    
+    
+@bot.command(pass_context = True)
+async def flip(ctx):
+    await bot.say("Okay, I'll flip it!")
+    coinmsg = await bot.say("-")
+    for _ in range(5):
+        await bot.edit_message(coinmsg, new_content="o")
+        await asyncio.sleep(.5)
+        await bot.edit_message(coinmsg, new_content="-")
+        await asyncio.sleep(.5)
+    await bot.delete_message(coinmsg)
+    await bot.send_typing(ctx.message.channel)
+    await asyncio.sleep(3)
+    if random.choice([True, False]) == True:
+        await bot.say(ctx.message.author.mention + ": the result is.......HEADS!")
+    else:
+        await bot.say(ctx.message.author.mention + ": the result is.......TAILS!")
+    
         
 @bot.group(pass_context = True)
 async def remind(ctx, time: str = "0", *, reminder: str="null"):
