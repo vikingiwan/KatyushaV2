@@ -10,7 +10,8 @@ import sqlite3
 import pyjokes
 from cleverwrap import CleverWrap
 
-#Variables & objects
+##Variables & objects##
+#Bot stuff
 global VERSION
 VERSION = '0.1'
 iwanID = "142076624072867840"
@@ -18,9 +19,13 @@ botID = "217108205627637761"
 bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
+#Lists
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
-userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "version"]
-operatorCommands = ["say", "purge", "getBot"]
+userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "$", "version"]
+operatorCommands = ["say", "purge", "getBot", "$+", "$-"]
+#Currency stuff
+currName = "credits"
+currSymbol = "©"
 
 #Remove default help command
 bot.remove_command('help')
@@ -59,6 +64,8 @@ def isOp(member):
 def create_tables():
     cur.execute('''CREATE TABLE IF NOT EXISTS quoteList
                      (QUOTES TEXT)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS Treasury
+                     (ID TEXT, amount TEXT)''')
                      
 def register_quote(usr, quote):
     quote = usr.name + ': "' + quote + '"'
@@ -75,6 +82,34 @@ def get_quote():
     quote = str(quote)
     quote = quote.strip("('',)")
     return quote
+    
+def getCurr(memID):
+    cur.execute("SELECT amount FROM Treasury WHERE ID = (?)", (memID,))
+    amt = str(cur.fetchall())
+    if amt == "[]":
+        cur.execute('''INSERT INTO Treasury (ID, amount) VALUES (?, 0)''', (memID,))
+        connection.commit()
+        return "0"
+    amt = amt.strip("[(',)]")
+    return amt
+    
+def addCurr(memID, amount):
+    cur.execute("SELECT amount FROM Treasury WHERE ID = (?)", (memID,))
+    amt = str(cur.fetchall())
+    amt = int(amt.strip("[(',)]"))
+    amt = amt + amount
+    cur.execute("UPDATE Treasury SET amount = (?) WHERE ID = (?)", (amt, memID))
+    connection.commit()
+    
+def subCurr(memID, amount):
+    cur.execute("SELECT amount FROM Treasury WHERE ID = (?)", (memID,))
+    amt = str(cur.fetchall())
+    amt = int(amt.strip("[(',)]"))
+    amt = amt - amount
+    if amt < 0:
+        amt = 0
+    cur.execute("UPDATE Treasury SET amount = (?) WHERE ID = (?)", (amt, memID))
+    connection.commit()
 
 #Bot Functions
 @bot.event
@@ -111,7 +146,27 @@ async def getBot(ctx):
         await bot.send_message(ctx.message.author, "Invite link:\nhttps://discordapp.com/api/oauth2/authorize?client_id=217108205627637761&scope=bot&permissions=1")
     else:
         await bot.say("ERROR: UNAUTHORIZED!")
+   
+@bot.command(pass_context = True, aliases=['$+'])
+async def addbal(ctx, member: discord.Member=None, *, amount: int):
+    if isOp(ctx.message.author) == True:
+        if member == None:
+            member = ctx.message.author
+        addCurr(member.id, amount)
+        await bot.delete_message(ctx.message)
+    else:
+        await bot.say("ERROR: UNAUTHORIZED")
         
+@bot.command(pass_context = True, aliases=['$-'])
+async def subbal(ctx, member: discord.Member=None, *, amount: int):
+    if isOp(ctx.message.author) == True:
+        if member == None:
+            member = ctx.message.author
+        subCurr(member.id, amount)
+        await bot.delete_message(ctx.message)
+    else:
+        await bot.say("ERROR: UNAUTHORIZED")
+   
         
 #USER COMMANDS
 @bot.command(pass_context = True)
@@ -283,16 +338,23 @@ async def info(ctx, member: discord.Member=None):
     em = discord.Embed(title='', description=info, colour=0xFF0000)
     em.set_author(name=member.name, icon_url=member.avatar_url)
     await bot.send_message(ctx.message.channel, embed=em)
-    
+  
+@bot.command(pass_context = True, aliases=['$'])
+async def bal(ctx, member: discord.Member=None):
+    if member == None:
+        member = ctx.message.author
+    await bot.say(member.mention + "'s balance: " + getCurr(member.id) + currSymbol)
+   
 #Cleverbot integration
 @bot.event
 async def on_message(message):
     await bot.process_commands(message)
     if message.content.startswith(message.server.get_member(botID).mention):
-        await bot.send_typing(message.channel)
-        stripmsg = message.content.replace('Katyusha, ', "")
-        botmsg = cb.say(stripmsg)
-        await bot.send_message(message.channel, message.author.mention + ': ' + botmsg)
+        if message.author.id != botID:
+            await bot.send_typing(message.channel)
+            stripmsg = message.content.replace('Katyusha, ', "")
+            botmsg = cb.say(stripmsg)
+            await bot.send_message(message.channel, message.author.mention + ': ' + botmsg)
     
     
 #Runtime, baby! Let's go!    
