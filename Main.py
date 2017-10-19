@@ -16,6 +16,7 @@ global VERSION
 VERSION = '0.1'
 iwanID = "142076624072867840"
 botID = "217108205627637761"
+vtacServer = "183107747217145856"
 bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
@@ -26,6 +27,9 @@ operatorCommands = ["say", "purge", "getBot", "$+", "$-"]
 #Currency stuff
 currName = "credits"
 currSymbol = "©"
+dodropCurr = True
+dropCurrChannel = "183107747217145856"
+#bot_testing dropCurrChannel = "282029355201462272"
 
 #Remove default help command
 bot.remove_command('help')
@@ -110,6 +114,25 @@ def subCurr(memID, amount):
         amt = 0
     cur.execute("UPDATE Treasury SET amount = (?) WHERE ID = (?)", (amt, memID))
     connection.commit()
+    
+async def dropCurr(chan):
+    print("Drop channel: " + chan.name)
+    while dodropCurr == True:
+        random.seed(time.time())
+        _waitTime = random.randint(600, 900)
+        await asyncio.sleep(_waitTime)
+        msg = await bot.wait_for_message(timeout=120, channel=chan)
+        if msg != None:
+            await asyncio.sleep(10)
+            dropmsg = await bot.send_message(chan, "Oopsies, I dropped a couple " + currName + "!\ntype `gimmie` to grab it!")
+            _msg = await bot.wait_for_message(timeout=60, channel=chan, content="gimmie")
+            if _msg != None:
+                __ = getCurr(_msg.author.id)
+                addCurr(_msg.author.id, 2)
+                await bot.delete_message(dropmsg)
+                await bot.send_message(chan, _msg.author.mention + " has grabbed the " + currName + "!")
+            else:
+                await bot.delete_message(dropmsg)
 
 #Bot Functions
 @bot.event
@@ -118,6 +141,7 @@ async def on_ready():
     print("ID: " + bot.user.id)
     print("------------------")
     await bot.change_presence(game=discord.Game(name="Victory Through Comradery!"))
+    await dropCurr(bot.get_server(vtacServer).get_channel(dropCurrChannel))
 
 #OPERATOR ONLY COMMANDS:
 @bot.command(pass_context = True)
