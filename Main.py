@@ -9,6 +9,9 @@ import os
 import sqlite3
 import pyjokes
 from cleverwrap import CleverWrap
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 ##Variables & objects##
 #Bot stuff
@@ -43,6 +46,8 @@ def getTokens():
         config.add_section("Tokens")
         config.set("Tokens", "Bot", "null")
         config.set("Tokens", "Cleverbot", "null")
+        config.set("Tokens", "smtp-user", "null")
+        config.set("Tokens", "smtp-pass", "null")
         with open ('tokens.cfg', 'w') as configfile:
             config.write(configfile)
         print("File created.")
@@ -54,6 +59,10 @@ def getTokens():
         botToken = config.get('Tokens', 'Bot')
         global cb
         cb = CleverWrap(config.get('Tokens', 'Cleverbot'))
+        global smtpUser
+        smtpUser = config.get('Tokens', 'smtp-user')
+        global smtpPass
+        smtpPass = config.get('Tokens', 'smtp-pass')
         
 def isOp(member):
     for r in member.roles:
@@ -133,6 +142,19 @@ async def dropCurr(chan):
                 await bot.send_message(chan, _msg.author.mention + " has grabbed the " + currName + "!")
             else:
                 await bot.delete_message(dropmsg)
+                
+def emailIwan(sub, body):
+    msg = MIMEMultipart()
+    msg['From'] = 'vikingiwan@gmail.com'
+    msg['To'] = 'vikingiwan@gmail.com'
+    msg['Subject'] = sub
+    msg.attach(MIMEText(body, 'plain'))
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(smtpUser, smtpPass)
+    text = msg.as_string()
+    server.sendmail(fromaddr, toaddr, text)
+    server.quit()
 
 #Bot Functions
 @bot.event
