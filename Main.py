@@ -16,7 +16,7 @@ from email.mime.text import MIMEText
 ##Variables & objects##
 #Bot stuff
 global VERSION
-VERSION = '0.1'
+VERSION = '0.2'
 iwanID = "142076624072867840"
 botID = "217108205627637761"
 vtacServer = "183107747217145856"
@@ -25,14 +25,15 @@ connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
 #Lists
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
-userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "$", "version"]
-operatorCommands = ["say", "purge", "getBot", "$+", "$-"]
+userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "$", "version", "changelog"]
+operatorCommands = ["say", "purge", "getBot", "$+", "$-", "!update"]
 #Currency stuff
 currName = "credits"
 currSymbol = "©"
 dodropCurr = True
 dropCurrChannel = "183107747217145856"
 #bot_testing dropCurrChannel = "282029355201462272"
+updateChan = "281728643359834112"
 
 #Remove default help command
 bot.remove_command('help')
@@ -155,6 +156,15 @@ def emailIwan(sub, body):
     text = msg.as_string()
     server.sendmail(fromaddr, toaddr, text)
     server.quit()
+    
+def get_changelog(ver):
+    with open ('changelogs/' + ver + '.txt', 'r') as changelog:
+        changelog = changelog.read()
+        changelog = changelog.splitlines()
+    changelog = str(changelog)
+    changelog = changelog.replace("',", "\n")
+    changelog = changelog.split("['],")
+    return changelog
 
 #Bot Functions
 @bot.event
@@ -212,6 +222,18 @@ async def subbal(ctx, member: discord.Member=None, *, amount: int):
         await bot.delete_message(ctx.message)
     else:
         await bot.say("ERROR: UNAUTHORIZED")
+        
+@bot.command(pass_context = True)
+async def update(ctx):
+    if ctx.message.channel == bot.get_server(vtacServer).get_channel(updateChan):
+        await bot.delete_message(ctx.message)
+        await bot.say("@here I've updated!")
+        await bot.say("Changelog for version " + VERSION     + ":")
+        for x in get_changelog(VERSION):
+                await bot.say("`" + str(x).strip("['],").replace("'", "") + "`")
+        
+    else:
+        await bot.delete_message(ctx.message)
    
         
 #USER COMMANDS
@@ -235,6 +257,12 @@ async def version():
 @bot.command()
 async def test():
     await bot.say("Hello World!")
+    
+@bot.command(pass_context = True)
+async def changelog(ctx, ver: str=VERSION):
+    await bot.say("Changelog for version " + ver + ":")
+    for x in get_changelog(ver):
+        await bot.say("`" + str(x).strip("['],").replace("'", "") + "`")
     
 @bot.command(pass_context = True)
 async def hug(ctx):
@@ -405,7 +433,7 @@ async def on_message(message):
     
 #Runtime, baby! Let's go!    
 print ('Getting ready...')
-print('Loading Katyusha v' + VERSION)
+print('Loading Katyusha2 v' + VERSION)
 create_tables()
 load_quotes()
 getTokens()

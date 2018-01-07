@@ -1,0 +1,4 @@
+-Implemented changelog system
+-Added !changelog command
+-Added !update command for operators
+-Updated !help command
