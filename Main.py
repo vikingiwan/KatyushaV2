@@ -25,7 +25,7 @@ connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
 #Lists
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
-userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "$", "version", "changelog"]
+userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "$", "pay", "version", "changelog"]
 operatorCommands = ["say", "purge", "getBot", "$+", "$-", "!update"]
 #Currency stuff
 currName = "credits"
@@ -418,6 +418,17 @@ async def bal(ctx, member: discord.Member=None):
     if member == None:
         member = ctx.message.author
     await bot.say(member.mention + "'s balance: " + getCurr(member.id) + currSymbol)
+    
+@bot.command(pass_context = True, aliases=['give'])
+async def pay(ctx, target: discord.Member=None, *, amount: int=None):
+    if target == None:
+        await bot.say("You need to tell me who you want to pay!\nExample: `!pay @Katyusha 5` (pays katyusha 5 " + currName)
+    elif (amount == None):
+        await bot.say("You need to specify an amount to pay!\nExample: `!pay @Katyusha 5` (pays katyusha 5 " + currName)
+    else:
+        subCurr(ctx.message.author.id, amount)
+        addCurr(target.id, amount)
+        await bot.say(ctx.message.author.mention + " has payed " + target.mention + " " + str(amount) + " " + currName)
    
 #Cleverbot integration
 @bot.event

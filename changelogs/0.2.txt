@@ -1,4 +1,6 @@
 -Implemented changelog system
 -Added !changelog command
 -Added !update command for operators
+-Implemented payment system
+-Added !pay command (can also use !give)
 -Updated !help command
