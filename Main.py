@@ -16,7 +16,7 @@ from email.mime.text import MIMEText
 ##Variables & objects##
 #Bot stuff
 global VERSION
-VERSION = '0.2'
+VERSION = '0.3'
 iwanID = "142076624072867840"
 botID = "217108205627637761"
 vtacServer = "183107747217145856"
@@ -27,6 +27,7 @@ cur = connection.cursor()
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
 userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "$", "pay", "version", "changelog"]
 operatorCommands = ["say", "purge", "getBot", "$+", "$-", "!update"]
+op_roles = ["183109339991506945", "183109993686499328", "437013614386479125"]
 #Currency stuff
 currName = "credits"
 currSymbol = "©"
@@ -67,10 +68,7 @@ def getTokens():
         
 def isOp(member):
     for r in member.roles:
-        if r.id == "183109339991506945":
-            return True
-            return
-        elif r.id == "183109993686499328":
+        if r.id in op_roles:
             return True
             return
     return False
