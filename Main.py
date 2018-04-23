@@ -16,7 +16,7 @@ from email.mime.text import MIMEText
 ##Variables & objects##
 #Bot stuff
 global VERSION
-VERSION = '0.3'
+VERSION = '0.4'
 iwanID = "142076624072867840"
 botID = "217108205627637761"
 vtacServer = "183107747217145856"
@@ -78,6 +78,8 @@ def create_tables():
                      (QUOTES TEXT)''')
     cur.execute('''CREATE TABLE IF NOT EXISTS Treasury
                      (ID TEXT, amount TEXT)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS Links
+                     (name TEXT, link TEXT)''')
                      
 def register_quote(usr, quote):
     quote = usr.name + ': "' + quote + '"'
@@ -163,6 +165,31 @@ def get_changelog(ver):
     changelog = changelog.replace("',", "\n")
     changelog = changelog.split("['],")
     return changelog
+    
+    
+    
+def get_link(name):
+    cur.execute("SELECT link FROM Links WHERE name = (?)", (name,))
+    link = str(cur.fetchall())
+    link = link.strip("[(',)]")
+    return link
+    
+def add_link(name, link):
+    cur.execute("INSERT INTO Links (name, link) VALUES (?, ?)", (name, link))
+    connection.commit()
+    print("Link Added")
+    
+def list_links():
+    list = []
+    cur.execute('''SELECT name FROM Links''')
+    rows = cur.fetchall()
+    for row in rows:
+        _row = str(row)
+        _row = _row.strip("[(',)]")
+        list.append(_row)
+    print(list)
+    return list
+    
 
 #Bot Functions
 @bot.event
@@ -232,6 +259,15 @@ async def update(ctx):
         
     else:
         await bot.delete_message(ctx.message)
+        
+@bot.command(pass_context = True)
+async def addLink(ctx, name: str=None, *, link: str=None):
+    if isOp(ctx.message.author) == True:
+        print("name: " + name)
+        print("link: " + link)
+        add_link(name, link)
+        await bot.delete_message(ctx.message)
+        await bot.say("Link Saved!")
    
         
 #USER COMMANDS
@@ -427,7 +463,20 @@ async def pay(ctx, target: discord.Member=None, *, amount: int=None):
         subCurr(ctx.message.author.id, amount)
         addCurr(target.id, amount)
         await bot.say(ctx.message.author.mention + " has payed " + target.mention + " " + str(amount) + " " + currName)
-   
+
+
+@bot.command(pass_context = True)
+async def link(ctx, name: str=None):
+    if name == None:
+        await bot.say("ERROR: LINK NOT FOUND!")
+    else:
+        await bot.say(ctx.message.author.mention + " " + get_link(name))
+        
+@bot.command(pass_context = True)
+async def links(ctx):
+    await bot.say(list_links())
+        
+        
 #Cleverbot integration
 @bot.event
 async def on_message(message):
