@@ -17,6 +17,8 @@ from email.mime.text import MIMEText
 #Bot stuff
 global VERSION
 VERSION = '0.4'
+global DEBUG
+DEBUG = True
 iwanID = "142076624072867840"
 botID = "217108205627637761"
 vtacServer = "183107747217145856"
@@ -73,6 +75,10 @@ def isOp(member):
             return True
             return
     return False
+    
+def debug(msg):
+    if DEBUG == True:
+        print(msg)
     
 def create_tables():
     cur.execute('''CREATE TABLE IF NOT EXISTS quoteList
@@ -132,6 +138,7 @@ async def dropCurr(chan):
         random.seed(time.time())
         _waitTime = random.randint(600, 900)
         await asyncio.sleep(_waitTime)
+        debug("DROPPING NOW...")
         msg = await bot.wait_for_message(timeout=120, channel=chan)
         if msg != None:
             await asyncio.sleep(10)
