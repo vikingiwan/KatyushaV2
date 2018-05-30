@@ -25,14 +25,14 @@ connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
 #Lists
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
-userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "$", "pay", "version", "changelog"]
-operatorCommands = ["say", "purge", "getBot", "$+", "$-", "!update"]
+userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "$", "pay", "version", "changelog", "links", "link"]
+operatorCommands = ["say", "purge", "getBot", "$+", "$-", "!update", "addLink"]
 op_roles = ["183109339991506945", "183109993686499328", "437011917677264906"]
 #Currency stuff
 currName = "credits"
 currSymbol = "©"
 dodropCurr = True
-dropCurrChannel = "183107747217145856"
+dropCurrChannel = "341359610609008652"
 #bot_testing dropCurrChannel = "282029355201462272"
 updateChan = "281728643359834112"
 
