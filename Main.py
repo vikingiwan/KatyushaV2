@@ -20,6 +20,7 @@ VERSION = '0.4'
 iwanID = "142076624072867840"
 botID = "217108205627637761"
 vtacServer = "183107747217145856"
+liamServer = "341359610609008652"
 bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
@@ -198,7 +199,7 @@ async def on_ready():
     print("ID: " + bot.user.id)
     print("------------------")
     await bot.change_presence(game=discord.Game(name="Victory Through Comradery!"))
-    await dropCurr(bot.get_server(vtacServer).get_channel(dropCurrChannel))
+    await dropCurr(bot.get_server(liamServer).get_channel(dropCurrChannel))
 
 #OPERATOR ONLY COMMANDS:
 @bot.command(pass_context = True)
