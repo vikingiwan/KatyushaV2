@@ -1,1 +1,1 @@
-screen -S KatyushaV2 python3 Main.py
+screen -S KatyushaV2 python3.5 Main.py
