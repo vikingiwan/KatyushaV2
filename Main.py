@@ -19,6 +19,7 @@ DEBUG = True
 iwanID = "142076624072867840"
 botID = "217108205627637761"
 vtacServer = "183107747217145856"
+joinRole = "469376345672253451"
 bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
@@ -120,13 +121,21 @@ def list_links():
     return list
     
 
-#Bot Functions
+#Bot Events
 @bot.event
 async def on_ready():
     print("Logged in as: " + bot.user.name)
     print("ID: " + bot.user.id)
     print("------------------")
     await bot.change_presence(game=discord.Game(name="Victory Through Comradery!"))
+    
+@bot.event
+async def on_member_join(member):
+    print(member.name + " has joined the server...assigning rank...")
+    _role = discord.utils.get(bot.get_server(vtacServer).roles, name="NRP")
+    await bot.add_roles(member, _role)
+    print("Role added to " + member.name)
+    
 
 #OPERATOR ONLY COMMANDS:
 @bot.command(pass_context = True)
