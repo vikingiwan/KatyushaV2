@@ -2,6 +2,7 @@
 import discord
 from discord.ext import commands
 import asyncio
+import sys
 import random
 import time
 import configparser
@@ -19,14 +20,13 @@ DEBUG = True
 iwanID = "142076624072867840"
 botID = "217108205627637761"
 vtacServer = "183107747217145856"
-joinRole = "469376345672253451"
 bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
 #Lists
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
 userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "version", "changelog", "links", "link"]
-operatorCommands = ["say", "purge", "getBot", "!update", "addLink"]
+operatorCommands = ["say", "purge", "getBot", "!update", "addLink", "terminate"]
 op_roles = ["183109993686499328", "183109339991506945"]
 updateChan = "281728643359834112"
 
@@ -185,6 +185,15 @@ async def addLink(ctx, name: str=None, *, link: str=None):
         add_link(name, link)
         await bot.delete_message(ctx.message)
         await bot.say("Link Saved!")
+        
+@bot.command(pass_context = True)
+async def terminate(ctx):
+    if isOp(ctx.message.author) == True:
+        await bot.say("Affirmative. Terminating now...")
+        await bot.change_presence(status=discord.Status.offline)
+        sys.exit()
+    else:
+        await bot.say("ERROR: UNAUTHORIZED!")
    
         
 #USER COMMANDS
