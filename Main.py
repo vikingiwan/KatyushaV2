@@ -17,9 +17,14 @@ global VERSION
 VERSION = '0.5'
 global DEBUG
 DEBUG = True
+global iwanID
 iwanID = "142076624072867840"
+global botID
 botID = "217108205627637761"
+global vtacServer
 vtacServer = "183107747217145856"
+global defaultChannel
+defaultChannel= "455416225204404225"
 bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
@@ -135,7 +140,13 @@ async def on_member_join(member):
     _role = discord.utils.get(bot.get_server(vtacServer).roles, name="NRP")
     await bot.add_roles(member, _role)
     print("Role added to " + member.name)
+    _chan = bot.get_server(vtacServer).get_channel(defaultChannel)
+    await bot.send_message(_chan, ":thumbsup: " + member.mention + " has joined Viking Tactical.")
     
+@bot.event
+async def on_member_remove(member):
+    _chan = bot.get_server(vtacServer).get_channel(defaultChannel)
+    await bot.send_message(_chan, ":thumbsdown: " + member.mention + " has left Viking Tactical.")
 
 #OPERATOR ONLY COMMANDS:
 @bot.command(pass_context = True)
