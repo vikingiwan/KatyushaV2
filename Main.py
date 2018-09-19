@@ -14,7 +14,7 @@ from cleverwrap import CleverWrap
 ##Variables & objects##
 #Bot stuff
 global VERSION
-VERSION = '0.4'
+VERSION = '0.5'
 global DEBUG
 DEBUG = True
 iwanID = "142076624072867840"

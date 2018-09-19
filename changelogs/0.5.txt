@@ -1,0 +1,3 @@
+-Removed currency functions
+-Added automatic assigning of NRP role to user on join
+-Added Operator-only !terminate command
