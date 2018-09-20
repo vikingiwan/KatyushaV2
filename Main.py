@@ -35,6 +35,15 @@ operatorCommands = ["say", "purge", "getBot", "!update", "addLink", "terminate"]
 op_roles = ["183109993686499328", "183109339991506945"]
 updateChan = "281728643359834112"
 
+welcome_message='''
+Welcome to Viking Tactical!
+
+If you'd like to apply for full-membership, you can submit an application at <http://vikingtactical.ml/index.php?link-forums/apply-here.3/> (It usually takes 3-5 mins to complete) and then someone would read your application and either accept or decline it. Either way, you'd receive an e-mail with the decision (might need to check your spam folder, sometimes our emails end up in there, i'm working on fixing that lol)
+
+Some of the benefits of becoming a full member are access to more channels on discord and categories on our forums, assignment to a division which has its own private chat channels, access to giveaways, and the ability to climb the ranks and gain promotions within the clan.
+There's no rush, obligation or pressure to make an app though!
+'''
+
 #Remove default help command
 bot.remove_command('help')
 
@@ -142,6 +151,7 @@ async def on_member_join(member):
     print("Role added to " + member.name)
     _chan = bot.get_server(vtacServer).get_channel(defaultChannel)
     await bot.send_message(_chan, ":thumbsup: " + member.mention + " has joined Viking Tactical.")
+    await bot.send_message(member, welcome_message)
     
 @bot.event
 async def on_member_remove(member):
