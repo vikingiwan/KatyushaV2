@@ -14,7 +14,7 @@ from cleverwrap import CleverWrap
 ##Variables & objects##
 #Bot stuff
 global VERSION
-VERSION = '0.5.1'
+VERSION = '0.6'
 global DEBUG
 DEBUG = True
 global iwanID
@@ -23,8 +23,8 @@ global botID
 botID = "217108205627637761"
 global vtacServer
 vtacServer = "183107747217145856"
-global defaultChannel
-defaultChannel= "455416225204404225"
+global mainChannel
+mainChannel= "455416225204404225"
 bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
@@ -33,7 +33,7 @@ killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did tha
 userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "version", "changelog", "links", "link"]
 operatorCommands = ["say", "purge", "getBot", "!update", "addLink", "terminate"]
 op_roles = ["183109993686499328", "183109339991506945"]
-updateChan = "281728643359834112"
+officer_roles = ["183110198188179456", "183109339991506945", "183109993686499328"]
 
 welcome_message='''
 Welcome to Viking Tactical!
@@ -43,6 +43,18 @@ If you'd like to apply for full-membership, you can submit an application at <ht
 Some of the benefits of becoming a full member are access to more channels on discord and categories on our forums, assignment to a division which has its own private chat channels, access to giveaways, and the ability to climb the ranks and gain promotions within the clan.
 There's no rush, obligation or pressure to make an app though!
 '''
+
+##########
+#RANKS
+rank_msg = "492802360616419338"
+rank_sfc = "492802199668129826"
+rank_sgt= "492802074140999691"
+rank_cpl = "492801929794158612"
+rank_pfc = "492801780002979850"
+rank_pvt = "281727465968369665"
+##########
+
+
 
 #Remove default help command
 bot.remove_command('help')
@@ -74,6 +86,31 @@ def isOp(member):
             return True
             return
     return False
+    
+def isOfficer(member):
+    for r in member.roles:
+        if r.id in officer_roles:
+            return True
+            return
+    return False
+    
+def getPromoRank(member):
+    for r in member.roles:
+        if r.id == rank_msg:
+            _promoRank = None
+        elif r.id == rank_sfc:
+            _promoRank = rank_msg
+        elif r.id == rank_sgt:
+            _promoRank = rank_sfc
+        elif r.id == rank_cpl:
+            _promoRank = rank_sgt
+        elif r.id == rank_pfc:
+            _promoRank = rank_cpl
+        elif r.id == rank_pvt:
+            _promoRank = rank_pfc
+        else:
+            _promoRank = None
+    return _promoRank
     
 def debug(msg):
     if DEBUG == True:
@@ -135,6 +172,9 @@ def list_links():
     return list
     
 
+    
+    
+
 #Bot Events
 @bot.event
 async def on_ready():
@@ -149,13 +189,13 @@ async def on_member_join(member):
     _role = discord.utils.get(bot.get_server(vtacServer).roles, name="NRP")
     await bot.add_roles(member, _role)
     print("Role added to " + member.name)
-    _chan = bot.get_server(vtacServer).get_channel(defaultChannel)
+    _chan = bot.get_server(vtacServer).get_channel(mainChannel)
     await bot.send_message(_chan, ":thumbsup: " + member.mention + " has joined Viking Tactical.")
     await bot.send_message(member, welcome_message)
     
 @bot.event
 async def on_member_remove(member):
-    _chan = bot.get_server(vtacServer).get_channel(defaultChannel)
+    _chan = bot.get_server(vtacServer).get_channel(mainChannel)
     await bot.send_message(_chan, ":thumbsdown: " + member.name + " has left Viking Tactical.")
 
 #OPERATOR ONLY COMMANDS:
@@ -187,18 +227,6 @@ async def getBot(ctx):
         await bot.say("ERROR: UNAUTHORIZED!")
         
 @bot.command(pass_context = True)
-async def update(ctx):
-    if ctx.message.channel == bot.get_server(vtacServer).get_channel(updateChan):
-        await bot.delete_message(ctx.message)
-        await bot.say("@here I've updated!")
-        await bot.say("Changelog for version " + VERSION     + ":")
-        for x in get_changelog(VERSION):
-                await bot.say("`" + str(x).strip("['],").replace("'", "") + "`")
-        
-    else:
-        await bot.delete_message(ctx.message)
-        
-@bot.command(pass_context = True)
 async def addLink(ctx, name: str=None, *, link: str=None):
     if isOp(ctx.message.author) == True:
         print("name: " + name)
@@ -216,6 +244,37 @@ async def terminate(ctx):
     else:
         await bot.say("ERROR: UNAUTHORIZED!")
    
+        
+#OFFICER COMMANDS
+@bot.command(pass_context = True)
+async def promote(ctx, *, member: discord.Member = None):
+    if isOfficer(ctx.message.author) == True:
+        if member is None:
+            await bot.say("Invalid target!\nCommand Usage Example: `!promote @Iwan`")
+        else:
+            _rank = getPromoRank(member)
+            if _rank == None:
+                await bot.say("ERROR: This user cannot be promoted!")
+            else:
+                _role = discord.utils.get(bot.get_server(vtacServer).roles, id=_rank)
+                await bot.add_roles(member, _role)
+                if _rank == rank_pfc:
+                    await bot.change_nickname(member, "Pfc. " + member.name)
+                elif _rank == rank_cpl:
+                    await bot.change_nickname(member, "Cpl. " + member.name)
+                elif _rank == rank_sgt:
+                    await bot.change_nickname(member, "Sgt. " + member.name)
+                elif _rank == rank_sfc:
+                    await bot.change_nickname(member, "Sfc. " +  member.name)
+                elif _rank == rank_msg:
+                    await bot.change_nickname(member,  "Msg. " +  member.name)
+            time.sleep(5)
+            await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone Congratulations to " + member.mention + " on their promotion!")
+    else:
+        await bot.say("ERROR: UNAUTHORIZED")
+            
+    
+        
         
 #USER COMMANDS
 @bot.command(pass_context = True)
