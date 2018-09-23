@@ -14,7 +14,7 @@ from cleverwrap import CleverWrap
 ##Variables & objects##
 #Bot stuff
 global VERSION
-VERSION = '0.5'
+VERSION = '0.5.1'
 global DEBUG
 DEBUG = True
 global iwanID
@@ -156,7 +156,7 @@ async def on_member_join(member):
 @bot.event
 async def on_member_remove(member):
     _chan = bot.get_server(vtacServer).get_channel(defaultChannel)
-    await bot.send_message(_chan, ":thumbsdown: " + member.mention + " has left Viking Tactical.")
+    await bot.send_message(_chan, ":thumbsdown: " + member.name + " has left Viking Tactical.")
 
 #OPERATOR ONLY COMMANDS:
 @bot.command(pass_context = True)

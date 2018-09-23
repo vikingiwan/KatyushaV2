@@ -1,0 +1,1 @@
+-Changed leave message to use username instead of a mention
