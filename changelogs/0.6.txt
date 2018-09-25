@@ -1,3 +1,4 @@
 -Changed leave message to use username instead of a mention
 -Removed broken !update command
 -Added !promote command for officers to give out promotions to members
+-Added giveaway system

@@ -25,13 +25,15 @@ global vtacServer
 vtacServer = "183107747217145856"
 global mainChannel
 mainChannel= "455416225204404225"
+global activeGiveaway
+activeGiveaway = False
 bot = commands.Bot(command_prefix="!")
 connection = sqlite3.connect('KatyushaData.db')
 cur = connection.cursor()
 #Lists
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
-userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "version", "changelog", "links", "link"]
-operatorCommands = ["say", "purge", "getBot", "!update", "addLink", "terminate"]
+userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "version", "changelog", "links", "link", "giveaway"]
+operatorCommands = ["say", "purge", "getBot", "!update", "addLink", "terminate", "startGiveaway", "endGiveaway"]
 op_roles = ["183109993686499328", "183109339991506945"]
 officer_roles = ["183110198188179456", "183109339991506945", "183109993686499328"]
 
@@ -45,13 +47,22 @@ There's no rush, obligation or pressure to make an app though!
 '''
 
 ##########
-#RANKS
+###RANKS###
+
+#Enlisted Ranks
 rank_msg = "492802360616419338"
 rank_sfc = "492802199668129826"
 rank_sgt= "492802074140999691"
 rank_cpl = "492801929794158612"
 rank_pfc = "492801780002979850"
 rank_pvt = "281727465968369665"
+
+#Officer Ranks
+rank_off = "183110198188179456"
+rank_cap = "183109339991506945"
+rank_com = "183109993686499328"
+
+enlisted_ranks = [rank_pvt, rank_pfc, rank_cpl, rank_sgt, rank_sfc, rank_msg, rank_off, rank_cap, rank_com]
 ##########
 
 
@@ -90,6 +101,13 @@ def isOp(member):
 def isOfficer(member):
     for r in member.roles:
         if r.id in officer_roles:
+            return True
+            return
+    return False
+    
+def isEnlisted(member):
+    for r in member.roles:
+        if  r.id in enlisted_ranks:
             return True
             return
     return False
@@ -243,6 +261,45 @@ async def terminate(ctx):
         sys.exit()
     else:
         await bot.say("ERROR: UNAUTHORIZED!")
+        
+        
+@bot.command(pass_context = True)
+async def startGiveaway(ctx, *, msg: str=None):
+    if isOp(ctx.message.author) == True:
+        global activeGiveaway
+        if activeGiveaway == True:
+            await bot.say("ERROR: There is already a giveaway in progress!")
+        else:
+            if msg == None:
+                await bot.say("ERROR: You cannot start a giveaway with a blank message!")
+            else:
+                global giveawayEntries
+                giveawayEntries = []
+                await bot.delete_message(ctx.message)
+                await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone A giveaway is  starting!\n(Remember, you must be a full member to participate in giveaways)\n")
+                await asyncio.sleep(5)
+                msg = "\n" + msg + "\n\nUse !giveaway to enter the giveaway!"
+                em = discord.Embed(title='', description=msg, colour=0xFF0000)
+                em.set_author(name='Giveaway Info:', icon_url="https://i.imgur.com/0DCg8JB.png")
+                await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), embed=em)
+                activeGiveaway = True
+    else:
+        await bot.say("ERROR: UNAUTHORIZED!")
+        
+@bot.command(pass_context = True)
+async def endGiveaway(ctx):
+    if isOp(ctx.message.author) == True:
+        global activeGiveaway
+        activeGiveaway = False
+        await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone The current giveaway is ending! I'm now deciding the winner...")
+        await asyncio.sleep(5)
+        await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "And the winner is...")
+        winner = random.choice(giveawayEntries)
+        await bot.send_typing(bot.get_server(vtacServer).get_channel(mainChannel))
+        await asyncio.sleep(10)
+        await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), winner.mention + "! Congratulations! :clap:")    
+    else:
+        await bot.say("ERROR: UNAUTHORIZED!")
    
         
 #OFFICER COMMANDS
@@ -268,7 +325,7 @@ async def promote(ctx, *, member: discord.Member = None):
                     await bot.change_nickname(member, "Sfc. " +  member.name)
                 elif _rank == rank_msg:
                     await bot.change_nickname(member,  "Msg. " +  member.name)
-            time.sleep(5)
+            await asyncio.sleep(5)
             await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone Congratulations to " + member.mention + " on their promotion!")
     else:
         await bot.say("ERROR: UNAUTHORIZED")
@@ -463,6 +520,25 @@ async def link(ctx, name: str=None):
 @bot.command(pass_context = True)
 async def links(ctx):
     await bot.say(list_links())
+    
+    
+@bot.command(pass_context = True)
+async def giveaway(ctx):
+    if isEnlisted(ctx.message.author) == True:
+        global activeGiveaway
+        if activeGiveaway == False:
+            await bot.say(ctx.message.author.mention + " There is no active giveaway!")
+        else:
+            global giveawayEntries
+            if ctx.message.author in giveawayEntries:
+                await bot.say(ctx.message.author.mention + " You're already entered into the giveaway. No cheating!")
+            else:
+                _entry = [ctx.message.author]
+                giveawayEntries = giveawayEntries + _entry
+                await bot.say(ctx.message.author.mention + " has entered into the giveaway!")
+    else:
+        await bot.say("ERROR: UNAUTHORIZED\nYou are not a full member! To gain access to giveaways, please submit an application.")
+    
         
         
 #Cleverbot integration
