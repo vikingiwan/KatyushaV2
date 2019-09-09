@@ -1,4 +1,4 @@
-#####KatyushaV2#####
+ #####KatyushaV2#####
 import discord
 from discord.ext import commands
 import asyncio
@@ -58,11 +58,11 @@ rank_pfc = "492801780002979850"
 rank_pvt = "281727465968369665"
 
 #Officer Ranks
-rank_off = "183110198188179456"
+rank_lt = "183110198188179456"
 rank_cap = "183109339991506945"
 rank_com = "183109993686499328"
 
-enlisted_ranks = [rank_pvt, rank_pfc, rank_cpl, rank_sgt, rank_sfc, rank_msg, rank_off, rank_cap, rank_com]
+enlisted_ranks = [rank_pvt, rank_pfc, rank_cpl, rank_sgt, rank_sfc, rank_msg, rank_lt, rank_cap, rank_com]
 ##########
 
 
@@ -114,8 +114,13 @@ def isEnlisted(member):
     
 def getPromoRank(member):
     for r in member.roles:
-        if r.id == rank_msg:
-            _promoRank = None
+        #_promoRank = None
+        if r.id == rank_cap:
+        	_promoRank == None
+        elif r.id == rank_lt:
+        	_promoRank = rank_cap
+        elif r.id == rank_msg:
+            _promoRank = rank_lt
         elif r.id == rank_sfc:
             _promoRank = rank_msg
         elif r.id == rank_sgt:
@@ -126,8 +131,6 @@ def getPromoRank(member):
             _promoRank = rank_cpl
         elif r.id == rank_pvt:
             _promoRank = rank_pfc
-        else:
-            _promoRank = None
     return _promoRank
     
 def debug(msg):
@@ -325,8 +328,12 @@ async def promote(ctx, *, member: discord.Member = None):
                     await bot.change_nickname(member, "Sfc. " +  member.name)
                 elif _rank == rank_msg:
                     await bot.change_nickname(member,  "Msg. " +  member.name)
-            await asyncio.sleep(5)
-            await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone Congratulations to " + member.mention + " on their promotion!")
+                elif _rank == rank_lt:
+                	await bot.change_nickname(member,  "Lt. " +  member.name)
+                elif _rank == rank_cap:
+                	await bot.change_nickname(member,  "Cpt. " +  member.name)
+                await asyncio.sleep(5)
+                await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone Congratulations to " + member.mention + " on their promotion!")
     else:
         await bot.say("ERROR: UNAUTHORIZED")
             
