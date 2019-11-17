@@ -18,13 +18,13 @@ VERSION = '0.6'
 global DEBUG
 DEBUG = True
 global iwanID
-iwanID = "142076624072867840"
+iwanID = 142076624072867840
 global botID
-botID = "217108205627637761"
-global vtacServer
-vtacServer = "183107747217145856"
+botID = 217108205627637761
+global vtacGuild
+vtacGuild = 183107747217145856
 global mainChannel
-mainChannel= "455416225204404225"
+mainChannel= 622144477233938482
 global activeGiveaway
 activeGiveaway = False
 bot = commands.Bot(command_prefix="!")
@@ -34,8 +34,8 @@ cur = connection.cursor()
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
 userCommands = ["test", "hug", "pat", "roll", "flip", "remind", "kill", "calc", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "version", "changelog", "links", "link", "giveaway"]
 operatorCommands = ["say", "purge", "getBot", "!update", "addLink", "terminate", "startGiveaway", "endGiveaway"]
-op_roles = ["183109993686499328", "183109339991506945"]
-officer_roles = ["183110198188179456", "183109339991506945", "183109993686499328"]
+op_roles = [183109993686499328, 183109339991506945]
+officer_roles = [183110198188179456, 183109339991506945, 183109993686499328]
 
 welcome_message='''
 Welcome to Viking Tactical!
@@ -49,18 +49,21 @@ There's no rush, obligation or pressure to make an app though!
 ##########
 ###RANKS###
 
+#Recruit Rank
+rank_rec = 469376345672253451
+
 #Enlisted Ranks
-rank_msg = "492802360616419338"
-rank_sfc = "492802199668129826"
-rank_sgt= "492802074140999691"
-rank_cpl = "492801929794158612"
-rank_pfc = "492801780002979850"
-rank_pvt = "281727465968369665"
+rank_msg = 492802360616419338
+rank_sfc = 492802199668129826
+rank_sgt= 492802074140999691
+rank_cpl = 492801929794158612
+rank_pfc = 492801780002979850
+rank_pvt = 281727465968369665
 
 #Officer Ranks
-rank_lt = "183110198188179456"
-rank_cap = "183109339991506945"
-rank_com = "183109993686499328"
+rank_lt = 183110198188179456
+rank_cap = 183109339991506945
+rank_com = 183109993686499328
 
 enlisted_ranks = [rank_pvt, rank_pfc, rank_cpl, rank_sgt, rank_sfc, rank_msg, rank_lt, rank_cap, rank_com]
 ##########
@@ -116,9 +119,9 @@ def getPromoRank(member):
     for r in member.roles:
         #_promoRank = None
         if r.id == rank_cap:
-        	_promoRank == None
+            _promoRank == None
         elif r.id == rank_lt:
-        	_promoRank = rank_cap
+            _promoRank = rank_cap
         elif r.id == rank_msg:
             _promoRank = rank_lt
         elif r.id == rank_sfc:
@@ -199,25 +202,33 @@ def list_links():
 #Bot Events
 @bot.event
 async def on_ready():
+    print("Discord version: " + discord.__version__)
     print("Logged in as: " + bot.user.name)
-    print("ID: " + bot.user.id)
+    print("ID: " + str(bot.user.id))
     print("------------------")
-    await bot.change_presence(game=discord.Game(name="Victory Through Comradery!"))
+    _activity = discord.Game("Victory Through Comradery!")
+    await bot.change_presence(activity=_activity)
+    #_debugRoles = bot.get_guild(vtacGuild).get_role(rank_rec).name
+    #print("Roles: " + _debugRoles)
     
 @bot.event
 async def on_member_join(member):
-    print(member.name + " has joined the server...assigning rank...")
-    _role = discord.utils.get(bot.get_server(vtacServer).roles, name="NRP")
-    await bot.add_roles(member, _role)
-    print("Role added to " + member.name)
-    _chan = bot.get_server(vtacServer).get_channel(mainChannel)
-    await bot.send_message(_chan, ":thumbsup: " + member.mention + " has joined Viking Tactical.")
-    await bot.send_message(member, welcome_message)
+    print(member.name + " has joined the guild...assigning rank...")
+    _role = bot.get_guild(vtacGuild).get_role(rank_rec)
+    await member.add_roles(_role, reason="New member", atomic=True)
+    print("Recruit rank added to " + member.display_name)
+    print("Adding rank prefix...")
+    _nick = "Rec. " + member.display_name
+    await member.edit(nick=_nick, reason="New User")
+    print("Added prefix to " + member.display_name)
+    _chan = bot.get_guild(vtacGuild).get_channel(mainChannel)
+    await _chan.send(":thumbsup: " + member.mention + " has joined Viking Tactical.")
+    #await bot.send_message(member, welcome_message)
     
 @bot.event
 async def on_member_remove(member):
-    _chan = bot.get_server(vtacServer).get_channel(mainChannel)
-    await bot.send_message(_chan, ":thumbsdown: " + member.name + " has left Viking Tactical.")
+    _chan = bot.get_guild(vtacGuild).get_channel(mainChannel)
+    await _chan.send(":thumbsdown: " + member.display_name + " has left Viking Tactical.")
 
 #OPERATOR ONLY COMMANDS:
 @bot.command(pass_context = True)
@@ -230,14 +241,13 @@ async def say(ctx, *, msg: str):
 
 @bot.command(pass_context = True)
 async def purge(ctx):
-    if isOp(ctx.message.author) == True:
-        await bot.say("UNDERSTOOD, COMMANDER. I WILL DESTROY THE EVIDENCE!")
+    if isOp(ctx.author) == True:
+        await ctx.send("UNDERSTOOD, COMMANDER. I WILL DESTROY THE EVIDENCE!")
         await asyncio.sleep(4)
-        async for msg in bot.logs_from(ctx.message.channel):
-            await bot.delete_message(msg)
-        await bot.say("CHANNEL HAS BEEN PURGED, SIR!")
+        await ctx.channel.purge(limit=100, bulk=True)
+        await ctx.send("CHANNEL HAS BEEN PURGED, SIR!")
     else:
-        await bot.say("ERROR: UNAUTHORIZED")
+        await ctx.send("ERROR: UNAUTHORIZED")
         
 @bot.command(pass_context = True)
 async def getBot(ctx):
@@ -279,12 +289,12 @@ async def startGiveaway(ctx, *, msg: str=None):
                 global giveawayEntries
                 giveawayEntries = []
                 await bot.delete_message(ctx.message)
-                await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone A giveaway is  starting!\n(Remember, you must be a full member to participate in giveaways)\n")
+                await bot.send_message(bot.get_guild(vtacGuild).get_channel(mainChannel), "@everyone A giveaway is  starting!\n(Remember, you must be a full member to participate in giveaways)\n")
                 await asyncio.sleep(5)
                 msg = "\n" + msg + "\n\nUse !giveaway to enter the giveaway!"
                 em = discord.Embed(title='', description=msg, colour=0xFF0000)
                 em.set_author(name='Giveaway Info:', icon_url="https://i.imgur.com/0DCg8JB.png")
-                await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), embed=em)
+                await bot.send_message(bot.get_guild(vtacGuild).get_channel(mainChannel), embed=em)
                 activeGiveaway = True
     else:
         await bot.say("ERROR: UNAUTHORIZED!")
@@ -294,13 +304,13 @@ async def endGiveaway(ctx):
     if isOp(ctx.message.author) == True:
         global activeGiveaway
         activeGiveaway = False
-        await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone The current giveaway is ending! I'm now deciding the winner...")
+        await bot.send_message(bot.get_guild(vtacGuild).get_channel(mainChannel), "@everyone The current giveaway is ending! I'm now deciding the winner...")
         await asyncio.sleep(5)
-        await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "And the winner is...")
+        await bot.send_message(bot.get_guild(vtacGuild).get_channel(mainChannel), "And the winner is...")
         winner = random.choice(giveawayEntries)
-        await bot.send_typing(bot.get_server(vtacServer).get_channel(mainChannel))
+        await bot.send_typing(bot.get_guild(vtacGuild).get_channel(mainChannel))
         await asyncio.sleep(10)
-        await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), winner.mention + "! Congratulations! :clap:")    
+        await bot.send_message(bot.get_guild(vtacGuild).get_channel(mainChannel), winner.mention + "! Congratulations! :clap:")    
     else:
         await bot.say("ERROR: UNAUTHORIZED!")
    
@@ -316,7 +326,7 @@ async def promote(ctx, *, member: discord.Member = None):
             if _rank == None:
                 await bot.say("ERROR: This user cannot be promoted!")
             else:
-                _role = discord.utils.get(bot.get_server(vtacServer).roles, id=_rank)
+                _role = discord.utils.get(bot.get_guild(vtacGuild).roles, id=_rank)
                 await bot.add_roles(member, _role)
                 if _rank == rank_pfc:
                     await bot.change_nickname(member, "Pfc. " + member.name)
@@ -329,11 +339,11 @@ async def promote(ctx, *, member: discord.Member = None):
                 elif _rank == rank_msg:
                     await bot.change_nickname(member,  "Msg. " +  member.name)
                 elif _rank == rank_lt:
-                	await bot.change_nickname(member,  "Lt. " +  member.name)
+                    await bot.change_nickname(member,  "Lt. " +  member.name)
                 elif _rank == rank_cap:
-                	await bot.change_nickname(member,  "Cpt. " +  member.name)
+                    await bot.change_nickname(member,  "Cpt. " +  member.name)
                 await asyncio.sleep(5)
-                await bot.send_message(bot.get_server(vtacServer).get_channel(mainChannel), "@everyone Congratulations to " + member.mention + " on their promotion!")
+                await bot.send_message(bot.get_guild(vtacGuild).get_channel(mainChannel), "@everyone Congratulations to " + member.mention + " on their promotion!")
     else:
         await bot.say("ERROR: UNAUTHORIZED")
             
@@ -511,7 +521,7 @@ async def pfp(ctx, member: discord.Member=None):
 async def info(ctx, member: discord.Member=None):
     if member == None:
         member = ctx.message.author
-    info = "Joined server on: " + member.joined_at.strftime("%A %B %d, %Y at %I:%M%p") + "\n"
+    info = "Joined guild on: " + member.joined_at.strftime("%A %B %d, %Y at %I:%M%p") + "\n"
     info = info + "Account created on: " + member.created_at.strftime("%A %B %d, %Y at %I:%M%p")
     em = discord.Embed(title='', description=info, colour=0xFF0000)
     em.set_author(name=member.name, icon_url=member.avatar_url)
@@ -552,7 +562,7 @@ async def giveaway(ctx):
 @bot.event
 async def on_message(message):
     await bot.process_commands(message)
-    if message.content.startswith(message.server.get_member(botID).mention):
+    if message.content.startswith(message.guild.get_member(botID).mention):
         if message.author.id != botID:
             await bot.send_typing(message.channel)
             stripmsg = message.content.replace('Katyusha, ', "")
