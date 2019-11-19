@@ -1,4 +1,4 @@
-# KatyushaV2
+# Katyusha
 --- 
 ### What is Katyusha?
 ##### Katyusha is a personal discord bot created for learning and experimentation purposes.
