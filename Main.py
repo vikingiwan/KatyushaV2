@@ -16,7 +16,7 @@ from cleverwrap import CleverWrap
 global VERSION
 VERSION = '3.0'
 global DEBUG
-DEBUG = True
+DEBUG = False
 global iwanID
 iwanID = 142076624072867840
 global botID
@@ -228,7 +228,6 @@ def list_links():
         _row = str(row)
         _row = _row.strip("[(',)]")
         list.append(_row)
-    debug(list)
     return list
     
 
