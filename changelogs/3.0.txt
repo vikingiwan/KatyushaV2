@@ -1,4 +1,4 @@
 - COMPLETE REWRITE!
-- 
+- Added !promote command
 - Removed Calc command
 - Disabled Cleverbot integration for now

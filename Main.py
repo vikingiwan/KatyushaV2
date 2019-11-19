@@ -16,7 +16,7 @@ from cleverwrap import CleverWrap
 global VERSION
 VERSION = '3.0'
 global DEBUG
-DEBUG = False
+DEBUG = True
 global iwanID
 iwanID = 142076624072867840
 global botID
@@ -121,8 +121,12 @@ def getRankClass(member):
             _rankClass = "command"
         if r.id in rankClass_highcommand:
             _rankClass = "highcommand"
-    debug(_rankClass)
+    debug("Rank Class check: " + _rankClass)
     return _rankClass
+
+def getRankObj(rank):
+    bot.get_guild(vtacGuild).get_role(rank)
+    return rank
     
 #def isEnlisted(member):
 #    for r in member.roles:
@@ -135,26 +139,38 @@ def getPromoRank(member):
     for r in member.roles:
         #_promoRank = None
         if r.id == rank_col:
+            _curRank = rank_col
             _promoRank = None
         elif r.id == rank_cpt:
+            _curRank = rank_cpt
             _promoRank = rank_col
         elif r.id == rank_lt:
+            _curRank = rank_lt
             _promoRank = rank_cpt
         elif r.id == rank_msg:
+            _curRank = rank_msg
             _promoRank = rank_lt
         elif r.id == rank_sgt:
+            _curRank = rank_sgt
             _promoRank = rank_msg
         elif r.id == rank_cpl:
+            _curRank = rank_cpl
             _promoRank = rank_sgt
         elif r.id == rank_lcpl:
+            _curRank = rank_lcpl
             _promoRank = rank_cpl
         elif r.id == rank_pfc:
+            _curRank = rank_pfc
             _promoRank = rank_lcpl
         elif r.id == rank_pvt:
+            _curRank = rank_pvt
             _promoRank = rank_pfc
         elif r.id == rank_rec:
+            _curRank = rank_rec
             _promoRank = rank_pvt
-    return _promoRank
+    _curRank = bot.get_guild(vtacGuild).get_role(_curRank)
+    _promoRank = bot.get_guild(vtacGuild).get_role(_promoRank)
+    return _curRank, _promoRank
     
 def debug(msg):
     if DEBUG == True:
@@ -238,7 +254,7 @@ async def on_member_join(member):
     await member.add_roles(_role, reason="New member", atomic=True)
     print("Recruit rank added to " + member.display_name)
     print("Adding rank prefix...")
-    _nick = "Rec. " + member.display_name
+    _nick = "Rec. " + member.name
     await member.edit(nick=_nick, reason="New User")
     print("Added prefix to " + member.display_name)
     _chan = bot.get_guild(vtacGuild).get_channel(mainChannel)
@@ -330,13 +346,71 @@ async def endGiveaway(ctx):
         await asyncio.sleep(10)
         await bot.get_guild(vtacGuild).get_channel(mainChannel).send(winner.mention + "! Congratulations! :clap:")    
     else:
-        await ctx.author.send("ERROR: UNAUTHORIZED!")
+        await ctx.channel.send("ERROR: UNAUTHORIZED!")
    
         
 #OFFICER COMMANDS
 @bot.command(pass_context = True)
 async def promote(ctx, *, member: discord.Member = None):
-    await ctx.author.send("Promote command = WIP")
+#    await ctx.author.send("Promote command = WIP")
+    if getRankClass(ctx.author) == "subcommand" or "command" or "highcommand":
+        curRank, promoRank = getPromoRank(member)
+        debug("\n" + "Member: " + member.display_name + "\n" + "Rank: " + curRank.name + "\n" + "Promo rank: " + promoRank.name)
+        #Main Rank Work:
+        debug("Adding Promo rank...")
+        await member.add_roles(promoRank, reason="Promotion", atomic=True)
+        debug("Removing old rank...")
+        await member.remove_roles(curRank, reason="Promotion", atomic=True)
+        if promoRank.id == rank_pvt:
+            debug("New class - Enlisted")
+            _rank = bot.get_guild(vtacGuild).get_role(rank_enlisted)
+            await member.add_roles(_rank, reason="Promotion", atomic=True)
+        elif promoRank.id == rank_sgt:
+            debug("New Class - Subcommand")
+            _rank = bot.get_guild(vtacGuild).get_role(rank_subcommand)
+            await member.add_roles(_rank, reason="Promotion to SubCommand", atomic=True)
+            _rank = bot.get_guild(vtacGuild).get_role(rank_enlisted)
+            await member.remove_roles(_rank, reason="Promotion to SubCommand", atomic=True)
+        elif promoRank.id == rank_lt:
+            debug("New Class - Command")
+            _rank = bot.get_guild(vtacGuild).get_role(rank_command)
+            await member.add_roles(_rank, reason="Promotion to Command", atomic=True)
+            _rank = bot.get_guild(vtacGuild).get_role(rank_subcommand)
+            await member.remove_roles(_rank, reason="Promotion to Command", atomic=True)
+        elif promoRank.id == rank_col:
+            debug("New Class - High-Command")
+            _rank = bot.get_guild(vtacGuild).get_role(rank_highcommand)
+            await member.add_roles(_rank, reason="Promotion to High-Command", atomic=True)
+            _rank = bot.get_guild(vtacGuild).get_role(rank_command)
+            await member.remove_roles(_rank, reason="Promotion to High-Command", atomic=True)
+        else:
+            debug("No new class to process")
+        #Set new name prefix
+        if promoRank.id == rank_pvt:
+            _nick = "Pvt. " + member.name
+        elif promoRank.id == rank_pfc:
+            _nick = "Pfc. " + member.name
+        elif promoRank.id == rank_lcpl:
+            _nick = "Lcpl. " + member.name
+        elif promoRank.id == rank_cpl:
+            _nick = "Cpl. " + member.name
+        elif promoRank.id == rank_sgt:
+            _nick = "Sgt. " + member.name
+        elif promoRank.id == rank_msg:
+            _nick = "Msg. " + member.name
+        elif promoRank.id == rank_lt:
+            _nick = "Lt. " + member.name
+        elif promoRank.id == rank_cpt:
+            _nick = "Cpt. " + member.name
+        elif promoRank.id == rank_col:
+            _nick = "Col. " + member.name
+        await member.edit(nick=_nick, reason="Promotion")
+
+        #Post to log channel
+        await bot.get_guild(vtacGuild).get_channel(logChannel).send("```" + "\n" + ctx.author.display_name + " has promoted " + member.name + " from " + curRank.name + " to " + promoRank.name + "\n" + "```")
+
+    else:
+        await ctx.channel.send("ERROR: UNAUTHORIZED!")
         
 #USER COMMANDS
 @bot.command(pass_context = True)
