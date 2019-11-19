@@ -1,0 +1,4 @@
+- COMPLETE REWRITE!
+- 
+- Removed Calc command
+- Disabled Cleverbot integration for now
