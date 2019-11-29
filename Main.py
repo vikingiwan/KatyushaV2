@@ -35,8 +35,13 @@ cur = connection.cursor()
 #Lists
 killResponses = ["%s 'accidentally' fell in a ditch... RIP >:)", "Oh, %s did that food taste strange? Maybe it was.....*poisoned* :wink:", "I didn't mean to shoot %s, I swear the gun was unloaded!", "Hey %s, do me a favor? Put this rope around your neck and tell me if it feels uncomfortable.", "*stabs %s* heh.... *stabs again*....hehe, stabby stabby >:D", "%s fell into the ocean whilst holding an anvil...well that was stupid."]
 userCommands = ["hug", "pat", "roll", "flip", "remind", "kill", "addquote", "quote", "joke", "dirtyjoke", "pfp", "info", "version", "changelog", "links", "link", "giveaway"]
-#op_roles = [183109993686499328, 183109339991506945]
-#officer_roles = [183110198188179456, 183109339991506945, 183109993686499328]
+
+#Currency stuff
+currName = "tokens"
+currEmoji = 649919039740706826
+currSymbol = "©"
+dodropCurr = True
+dropCurrChannel = 622144477233938482
 
 welcome_message='''
 Welcome to Viking Tactical!
@@ -127,6 +132,11 @@ def getRankClass(member):
 def getRankObj(rank):
     bot.get_guild(vtacGuild).get_role(rank)
     return rank
+
+
+def getEmoji(id):
+	emoji = bot.get_emoji(id)
+	return emoji
     
 #def isEnlisted(member):
 #    for r in member.roles:
@@ -181,6 +191,8 @@ def create_tables():
                      (QUOTES TEXT)''')
     cur.execute('''CREATE TABLE IF NOT EXISTS Links
                      (name TEXT, link TEXT)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS Treasury
+                     (ID TEXT, amount TEXT)''')
                      
 def register_quote(usr, quote):
     quote = usr.name + ': "' + quote + '"'
@@ -231,6 +243,38 @@ def list_links():
     return list
     
 
+
+#Currency Functions
+
+def getCurr(memID):
+    cur.execute("SELECT amount FROM Treasury WHERE ID = (?)", (memID,))
+    amt = str(cur.fetchall())
+    if amt == "[]":
+        cur.execute('''INSERT INTO Treasury (ID, amount) VALUES (?, 0)''', (memID,))
+        connection.commit()
+        return "0"
+    amt = amt.strip("[(',)]")
+    return amt
+
+
+def addCurr(memID, amount):
+    cur.execute("SELECT amount FROM Treasury WHERE ID = (?)", (memID,))
+    amt = str(cur.fetchall())
+    amt = int(amt.strip("[(',)]"))
+    amt = amt + amount
+    cur.execute("UPDATE Treasury SET amount = (?) WHERE ID = (?)", (amt, memID))
+    connection.commit()
+    
+
+def subCurr(memID, amount):
+    cur.execute("SELECT amount FROM Treasury WHERE ID = (?)", (memID,))
+    amt = str(cur.fetchall())
+    amt = int(amt.strip("[(',)]"))
+    amt = amt - amount
+    if amt < 0:
+        amt = 0
+    cur.execute("UPDATE Treasury SET amount = (?) WHERE ID = (?)", (amt, memID))
+    connection.commit()
     
     
 
@@ -309,16 +353,44 @@ async def terminate(ctx):
     else:
         await ctx.author.send("ERROR: UNAUTHORIZED!")
         
+#Currency Commands
+
+@bot.command(pass_context = True, aliases=['$+'])
+async def addbal(ctx, member: discord.Member=None, *, amount: int):
+	if getRankClass(ctx.author) == "highcommand":
+		if member == None:
+			member = ctx.message.author
+		addCurr(member.id, amount)
+		await ctx.message.delete()
+	else:
+		await ctx.channel.send("ERROR: UNAUTHORIZED")
+
+@bot.command(pass_context = True, aliases=['$-'])
+async def subbal(ctx, member: discord.Member=None, *, amount: int):
+	if getRankClass(ctx.author) == "highcommand":
+		if member == None:
+			member = ctx.message.author
+		subCurr(member.id, amount)
+		await ctx.message.delete()
+	else:
+		await ctx.channel.send("ERROR: UNAUTHORIZED")
+
+@bot.command(pass_context = True, aliases=['$'])
+async def bal(ctx, member: discord.Member=None):
+    if member == None:
+        member = ctx.message.author
+    await ctx.channel.send(member.mention + "'s balance: " + getCurr(member.id) + currSymbol)
+
         
 @bot.command(pass_context = True)
 async def startGiveaway(ctx, *, msg: str=None):
     if getRankClass(ctx.author) == "command":
         global activeGiveaway
         if activeGiveaway == True:
-            await ctx.author.send("ERROR: There is already a giveaway in progress!")
+            await ctx.channel.send("ERROR: There is already a giveaway in progress!")
         else:
             if msg == None:
-                await ctx.author.send("ERROR: You cannot start a giveaway with a blank message!")
+                await ctx.channel.send("ERROR: You cannot start a giveaway with a blank message!")
             else:
                 global giveawayEntries
                 giveawayEntries = []
