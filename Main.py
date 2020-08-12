@@ -14,7 +14,7 @@ from cleverwrap import CleverWrap
 ##Variables & objects##
 #Bot stuff
 global VERSION
-VERSION = '3.0'
+VERSION = '3.1'
 global DEBUG
 DEBUG = False
 global iwanID
@@ -667,7 +667,25 @@ async def on_message(message):
 #            stripmsg = message.content.replace('Katyusha, ', "")
 #            botmsg = cb.say(stripmsg)
 #            await ctx.channel.send(message.author.mention + ': ' + botmsg)
-    
+    debug("Passed cmd processing")
+    _b = await message.guild.fetch_member(botID)
+    debug("fetched member")
+    if _b.mentioned_in(message):
+        debug("passed mention test")
+        if message.author.id != botID:
+            debug("Sender is not bot, sending typing effect")
+            async with message.channel.typing():
+                debug("typing effect done")
+                debug("stripping message")
+                stripmsg = message.content.replace('Tek Oot, ', "")
+                stripmsg = stripmsg.replace("<@!742278272515178547>", "")
+                debug("Stripped message: " + stripmsg)
+                botmsg = cb.say(stripmsg)
+                debug("Getting cleverbot response...")
+                await asyncio.sleep(8)
+                await message.channel.send(message.author.mention + ': ' + botmsg)
+                debug("sending response")
+
     
 #Runtime, baby! Let's go!    
 print ('Getting ready...')

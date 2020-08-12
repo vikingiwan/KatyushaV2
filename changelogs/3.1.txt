@@ -1,0 +1,2 @@
+- Updated all requirements
+- Updated and re-enabled Cleverbot integration
