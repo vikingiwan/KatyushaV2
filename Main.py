@@ -1,6 +1,7 @@
  #####KatyushaV2#####
 import discord
 from discord.ext import commands
+from discord.utils import get
 import asyncio
 import sys
 import random
@@ -16,7 +17,7 @@ from cleverwrap import CleverWrap
 global VERSION
 VERSION = '3.1'
 global DEBUG
-DEBUG = False
+DEBUG = True
 global iwanID
 iwanID = 142076624072867840
 global botID
@@ -25,6 +26,8 @@ global vtacGuild
 vtacGuild = 183107747217145856
 global mainChannel
 mainChannel= 622144477233938482
+global courtVCChannel
+courtVCChannel = 700887998299897858
 global logChannel
 logChannel = 646211007294865408
 global activeGiveaway
@@ -55,36 +58,41 @@ There's no rush, obligation or pressure to make an app though!
 ##########
 ###RANKS###
 
+rank_martialed = 492467059830161428
+
+
 #Recruit Rank
 rank_rec = 469376345672253451
 
 #Enlisted Ranks
 rank_enlisted = 281727465968369665
-rank_cpl = 492801929794158612
-rank_lcpl = 632127911033569290
+rank_spc = 632127911033569290
 rank_pfc = 492801780002979850
 rank_pvt = 574741329448534038
 
 #Sub-Command Ranks
 rank_subcommand = 594343305987489808
-rank_msg = 492802360616419338
+rank_sgm = 492802360616419338
 rank_sgt = 492802074140999691
+rank_cpl = 751656103741489263
 
 #Command Ranks
 rank_command = 569278265857015818
 rank_cpt = 183109339991506945
-rank_lt = 183110198188179456
+rank_1lt = 751656315029422170
+rank_2lt = 183110198188179456
 
 #High-Command Ranks
 rank_highcommand = 577169836476465153
 rank_com = 183109993686499328
+rank_gen = 751656615966670889
 rank_col = 632122115096838144
-
+rank_maj = 751656507946303539
 #Rank Class Lists
-rankClass_enlisted = [rank_pvt, rank_pfc, rank_lcpl, rank_cpl]
-rankClass_subcommand = [rank_sgt, rank_msg]
-rankClass_command = [rank_lt, rank_cpt]
-rankClass_highcommand = [rank_col, rank_com]
+rankClass_enlisted = [rank_pvt, rank_pfc, rank_spc]
+rankClass_subcommand = [rank_cpl, rank_sgt, rank_sgm]
+rankClass_command = [rank_2lt, rank_1lt, rank_cpt]
+rankClass_highcommand = [rank_maj, rank_col, rank_gen, rank_com]
 
 
 ##########
@@ -166,12 +174,12 @@ def getPromoRank(member):
         elif r.id == rank_cpl:
             _curRank = rank_cpl
             _promoRank = rank_sgt
-        elif r.id == rank_lcpl:
-            _curRank = rank_lcpl
+        elif r.id == rank_spc:
+            _curRank = rank_spc
             _promoRank = rank_cpl
         elif r.id == rank_pfc:
             _curRank = rank_pfc
-            _promoRank = rank_lcpl
+            _promoRank = rank_spc
         elif r.id == rank_pvt:
             _curRank = rank_pvt
             _promoRank = rank_pfc
@@ -241,7 +249,67 @@ def list_links():
         _row = _row.strip("[(',)]")
         list.append(_row)
     return list
+
+
+async def newCourtMartial(plaintiff, defendant, reason):
+    debug("#New Court Martial recieved#")
+    debug("Plaintiff: " + plaintiff.display_name)
+    debug("Defendant: " + defendant.display_name)
+    debug("Reason: " + reason)
     
+    #Getting role names of Defendant
+    defendantRoleNames = '\n'.join(str(r) for r in defendant.roles)
+    defendantRoleNames = defendantRoleNames.strip("@everyone")
+
+    #Removing roles of Defendant
+    for r in defendant.roles:
+        debug("Role: " + r.name)
+        if r.id != 183107747217145856:
+            await defendant.remove_roles(r, reason="Court-Martial", atomic=True)
+
+    #Adding Martial Role
+    martialRank = bot.get_guild(vtacGuild).get_role(rank_martialed)
+    await defendant.add_roles(martialRank, reason="Court-Martial", atomic=True)
+
+
+    #Get MP Court Category
+    _cat = discord.utils.get(bot.get_guild(vtacGuild).categories, name="MP Court")
+    
+    #Generate random Case ID
+    caseID = random.randint(1000, 9999)
+
+    #Define permissions
+    _roleMP = get(bot.get_guild(vtacGuild).roles, name="MP")
+    _roleHC = get(bot.get_guild(vtacGuild).roles, name="--High-Command--")
+    _roleCom = get(bot.get_guild(vtacGuild).roles, name="Commander")
+
+    martialChanPerms={
+    bot.get_guild(vtacGuild).default_role: discord.PermissionOverwrite(read_messages=False),
+    _roleCom: discord.PermissionOverwrite(administrator=True),
+    _roleHC: discord.PermissionOverwrite(administrator=True),
+    _roleMP: discord.PermissionOverwrite(read_messages=True, send_messages=True, embed_links=True, attach_files=True, read_message_history=True, mention_everyone=True),
+    plaintiff: discord.PermissionOverwrite(read_messages=True, send_messages=True, embed_links=True, attach_files=True, read_message_history=True),
+    defendant: discord.PermissionOverwrite(read_messages=True, send_messages=True, embed_links=True, attach_files=True, read_message_history=True)
+    }
+    
+    caseChanPerms={
+    bot.get_guild(vtacGuild).default_role: discord.PermissionOverwrite(read_messages=False),
+    _roleCom: discord.PermissionOverwrite(administrator=True),
+    _roleHC: discord.PermissionOverwrite(administrator=True),
+    _roleMP: discord.PermissionOverwrite(read_messages=True, send_messages=True, embed_links=True, attach_files=True, read_message_history=True, mention_everyone=True)
+    }
+
+    #Create channels
+    martialChan = await bot.get_guild(vtacGuild).create_text_channel('martial-' + str(caseID), overwrites=martialChanPerms, category=_cat, reason="New Court-Martial")
+    caseChan = await bot.get_guild(vtacGuild).create_text_channel('case-' + str(caseID), overwrites=caseChanPerms, category=_cat, reason="New Court-Martial")
+
+    #Send info to Martial Channel
+    await martialChan.send(defendant.mention + " has been court-martialed by " + plaintiff.mention + " for: " + reason + '\n' + "Case ID: " + str(caseID) + '\n' + '\n' + "An Officer of the " + _roleMP.mention + " will be with you both shortly.")
+
+    #Send info to Case Channel
+    await caseChan.send("New Court-Martial has landed on the MP-Dept's desk!")
+    await caseChan.send("Case Info:" + '\n' + "Plaintiff: " + plaintiff.display_name + '\n' + "Defendant: " + defendant.display_name + '\n' + "Reason for Court-Martial: " + reason + '\n' + '\n' + "Defendant's Roles: " + defendantRoleNames + '\n' + '\n' + _roleMP.mention + ": Please claim and discuss the case here!")
+
 
 
 #Currency Functions
@@ -421,6 +489,24 @@ async def endGiveaway(ctx):
    
         
 #OFFICER COMMANDS
+
+
+@bot.command(pass_context = True)
+async def martial(ctx, member: discord.Member=None, *, reason: str=None):
+    if getRankClass(ctx.author) == "command" or "highcommand":
+        if member == None or reason == None:
+            await ctx.channel.send("Please provide a member and reason.")
+        else:
+            await ctx.message.delete()
+            _waitmsg = await ctx.channel.send("Creating paperwork for new Court-Martial, please wait...")
+            await newCourtMartial(ctx.message.author, member, reason)
+            await _waitmsg.delete()
+    else:
+        await ctx.channel.send("ERROR: UNAUTHORIZED!")
+
+
+
+
 @bot.command(pass_context = True)
 async def promote(ctx, *, member: discord.Member = None):
 #    await ctx.author.send("Promote command = WIP")
@@ -461,8 +547,8 @@ async def promote(ctx, *, member: discord.Member = None):
             _nick = "Pvt. " + member.name
         elif promoRank.id == rank_pfc:
             _nick = "Pfc. " + member.name
-        elif promoRank.id == rank_lcpl:
-            _nick = "Lcpl. " + member.name
+        elif promoRank.id == rank_spc:
+            _nick = "spc. " + member.name
         elif promoRank.id == rank_cpl:
             _nick = "Cpl. " + member.name
         elif promoRank.id == rank_sgt:
