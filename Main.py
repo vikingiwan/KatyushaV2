@@ -156,21 +156,30 @@ def getEmoji(id):
 def getPromoRank(member):
     for r in member.roles:
         #_promoRank = None
-        if r.id == rank_col:
-            _curRank = rank_col
+        if r.id == rank_gen:
+            _curRank = rank_gen
             _promoRank = None
+        elif r.id == rank_col:
+            _curRank = rank_col
+            _promoRank = rank_gen
+        elif r.id == rank_maj:
+            _curRank = rank_maj
+            _promoRank = rank_col
         elif r.id == rank_cpt:
             _curRank = rank_cpt
-            _promoRank = rank_col
-        elif r.id == rank_lt:
-            _curRank = rank_lt
+            _promoRank = rank_maj
+        elif r.id == rank_1lt:
+            _curRank = rank_1lt
             _promoRank = rank_cpt
-        elif r.id == rank_msg:
-            _curRank = rank_msg
-            _promoRank = rank_lt
+        elif r.id == rank_2lt:
+            _curRank = rank_2lt
+            _promoRank = rank_1lt
+        elif r.id == rank_sgm:
+            _curRank = rank_sgm
+            _promoRank = rank_2lt
         elif r.id == rank_sgt:
             _curRank = rank_sgt
-            _promoRank = rank_msg
+            _promoRank = rank_sgm
         elif r.id == rank_cpl:
             _curRank = rank_cpl
             _promoRank = rank_sgt
@@ -522,19 +531,19 @@ async def promote(ctx, *, member: discord.Member = None):
             debug("New class - Enlisted")
             _rank = bot.get_guild(vtacGuild).get_role(rank_enlisted)
             await member.add_roles(_rank, reason="Promotion", atomic=True)
-        elif promoRank.id == rank_sgt:
+        elif promoRank.id == rank_cpl:
             debug("New Class - Subcommand")
             _rank = bot.get_guild(vtacGuild).get_role(rank_subcommand)
             await member.add_roles(_rank, reason="Promotion to SubCommand", atomic=True)
             _rank = bot.get_guild(vtacGuild).get_role(rank_enlisted)
             await member.remove_roles(_rank, reason="Promotion to SubCommand", atomic=True)
-        elif promoRank.id == rank_lt:
+        elif promoRank.id == rank_2lt:
             debug("New Class - Command")
             _rank = bot.get_guild(vtacGuild).get_role(rank_command)
             await member.add_roles(_rank, reason="Promotion to Command", atomic=True)
             _rank = bot.get_guild(vtacGuild).get_role(rank_subcommand)
             await member.remove_roles(_rank, reason="Promotion to Command", atomic=True)
-        elif promoRank.id == rank_col:
+        elif promoRank.id == rank_maj:
             debug("New Class - High-Command")
             _rank = bot.get_guild(vtacGuild).get_role(rank_highcommand)
             await member.add_roles(_rank, reason="Promotion to High-Command", atomic=True)
@@ -548,19 +557,25 @@ async def promote(ctx, *, member: discord.Member = None):
         elif promoRank.id == rank_pfc:
             _nick = "Pfc. " + member.name
         elif promoRank.id == rank_spc:
-            _nick = "spc. " + member.name
+            _nick = "Spc. " + member.name
         elif promoRank.id == rank_cpl:
             _nick = "Cpl. " + member.name
         elif promoRank.id == rank_sgt:
             _nick = "Sgt. " + member.name
-        elif promoRank.id == rank_msg:
-            _nick = "Msg. " + member.name
-        elif promoRank.id == rank_lt:
-            _nick = "Lt. " + member.name
+        elif promoRank.id == rank_sgm:
+            _nick = "Sgm. " + member.name
+        elif promoRank.id == rank_2lt:
+            _nick = "2lt. " + member.name
+        elif promoRank.id == rank_1lt:
+            _nick = "LT. " + member.name
         elif promoRank.id == rank_cpt:
             _nick = "Cpt. " + member.name
+        elif promoRank.id == rank_maj:
+            _nick = "Maj. " + member.name
         elif promoRank.id == rank_col:
             _nick = "Col. " + member.name
+        elif promoRank.id == rank_gen:
+            _nick = "Gen. " + member.name
         await member.edit(nick=_nick, reason="Promotion")
 
         #Post to log channel

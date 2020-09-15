@@ -1,2 +1,3 @@
 - Updated all requirements
 - Updated and re-enabled Cleverbot integration
+- Updated !promote command as per restructuring
