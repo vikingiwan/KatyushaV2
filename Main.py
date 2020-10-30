@@ -15,7 +15,7 @@ from cleverwrap import CleverWrap
 ##Variables & objects##
 #Bot stuff
 global VERSION
-VERSION = '3.1'
+VERSION = '3.2'
 global DEBUG
 DEBUG = True
 global iwanID
@@ -778,8 +778,8 @@ async def on_message(message):
             async with message.channel.typing():
                 debug("typing effect done")
                 debug("stripping message")
-                stripmsg = message.content.replace('Tek Oot, ', "")
-                stripmsg = stripmsg.replace("<@!742278272515178547>", "")
+                stripmsg = message.content.replace('Katyusha, ', "")
+                stripmsg = stripmsg.replace("<@!217108205627637761>", "")
                 debug("Stripped message: " + stripmsg)
                 botmsg = cb.say(stripmsg)
                 debug("Getting cleverbot response...")
